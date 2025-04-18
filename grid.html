@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>XCASINO - Mystery Grid</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .grid-cell {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(236, 72, 153, 0.3);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .grid-cell:hover {
+      transform: scale(0.95);
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+    }
+    .revealed {
+      background-color: rgba(236, 72, 153, 0.3) !important;
+      border-color: rgba(236, 72, 153, 0.8) !important;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .bounce {
+      animation: bounce 0.5s;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .pulse {
+      animation: pulse 0.5s;
+    }
+    .glow {
+      text-shadow: 0 0 10px rgba(236, 72, 153, 0.8);
+    }
+    .bet-button {
+      transition: all 0.2s ease;
+    }
+    .bet-button:hover {
+      transform: scale(1.05);
+    }
+    .bet-button.active {
+      background-color: rgba(236, 72, 153, 0.8);
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+  <div class="w-full max-w-2xl">
+    <h1 class="text-4xl font-bold text-center mb-6 text-pink-500 glow">MYSTERY GRID <i class="fas fa-gem ml-2"></i></h1>
+    
+    <div class="bg-gray-800 rounded-xl p-6 mb-6 border border-pink-500/20 shadow-lg shadow-pink-500/10">
+      <!-- Bet Selection -->
+      <div class="mb-6 bg-gray-700 rounded-lg p-4">
+        <p class="text-center mb-3 text-pink-300">CHOISISSEZ VOTRE MISE</p>
+        <div class="flex justify-center space-x-3">
+          <button onclick="selectBet(5)" class="bet-button bg-gray-600 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
+            5 XC
+          </button>
+          <button onclick="selectBet(10)" class="bet-button bg-gray-600 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
+            10 XC
+          </button>
+          <button onclick="selectBet(25)" class="bet-button bg-gray-600 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
+            25 XC
+          </button>
+          <button onclick="selectBet(50)" class="bet-button bg-gray-600 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">
+            50 XC
+          </button>
+        </div>
+      </div>
+      
+      <!-- Grid -->
+      <div class="grid grid-cols-5 gap-3 mb-6" id="mystery-grid"></div>
+      
+      <!-- Game Controls -->
+      <div class="text-center">
+        <div class="flex justify-between items-center mb-4">
+          <div class="bg-gray-700 rounded-lg p-3">
+            <p class="text-pink-300">CLICS RESTANTS</p>
+            <p id="clicks-left" class="text-2xl font-bold text-pink-500">0</p>
+          </div>
+          <div class="bg-gray-700 rounded-lg p-3">
+            <p class="text-pink-300">MISE ACTUELLE</p>
+            <p id="current-bet" class="text-2xl font-bold text-pink-500">0 XC</p>
+          </div>
+        </div>
+        
+        <button onclick="resetGrid()" id="play-button" class="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white px-8 py-3 rounded-full text-lg font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-pink-500/30 mb-4">
+          <i class="fas fa-play mr-2"></i> JOUER
+        </button>
+        
+        <div id="grid-result" class="mt-4 text-xl font-bold min-h-[50px] flex items-center justify-center rounded-lg bg-gray-700 p-3 border border-pink-500/30"></div>
+      </div>
+    </div>
+    
+    <!-- User Info -->
+    <div class="flex justify-between items-center bg-gray-800 rounded-lg p-4 border border-pink-500/20">
+      <div class="text-xl">
+        <i class="fas fa-coins text-yellow-400 mr-2"></i>
+        <span id="xcoins-amount" class="font-bold">0</span> XCoins
+      </div>
+      <button onclick="window.location.href='index.html'" class="bg-gray-700 hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-all">
+        <i class="fas fa-arrow-left mr-2"></i> Retour
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const rewards = [
+      { type: "small", emoji: "💰", text: "+5 XCoins", value: 5, weight: 30 },
+      { type: "medium", emoji: "🪙", text: "+10 XCoins", value: 10, weight: 20 },
+      { type: "big", emoji: "💎", text: "+25 XCoins", value: 25, weight: 15 },
+      { type: "huge", emoji: "🏆", text: "+50 XCoins", value: 50, weight: 5 },
+      { type: "vip", emoji: "👑", text: "Clé VIP", value: "vip", weight: 5 },
+      { type: "bomb", emoji: "💣", text: "Perdu!", value: 0, weight: 15 },
+      { type: "multiplier", emoji: "✨", text: "x2 Multiplicateur", value: "multiplier", weight: 10 }
+    ];
+
+    let grid = [];
+    let clicksLeft = 0;
+    let gameActive = false;
+    let currentBet = 0;
+    let multiplierActive = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadUserData();
+      updateBetButtons();
+    });
+
+    function loadUserData() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+      document.getElementById('xcoins-amount').textContent = userData.coins || 0;
+    }
+
+    function selectBet(amount) {
+      currentBet = amount;
+      document.getElementById('current-bet').textContent = `${currentBet} XC`;
+      updateBetButtons();
+    }
+
+    function updateBetButtons() {
+      document.querySelectorAll('.bet-button').forEach(button => {
+        const buttonAmount = parseInt(button.textContent.replace(' XC', ''));
+        button.classList.toggle('active', buttonAmount === currentBet);
+      });
+    }
+
+    function createGrid() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+      
+      if (currentBet <= 0) {
+        showResult("Sélectionnez une mise!", "text-red-400");
+        return;
+      }
+      
+      if (userData.coins < currentBet) {
+        showResult("Pas assez de XCoins!", "text-red-400");
+        return;
+      }
+
+      userData.coins -= currentBet;
+      localStorage.setItem(`user_${currentUser.id}_data`, JSON.stringify(userData));
+      document.getElementById('xcoins-amount').textContent = userData.coins;
+      
+      grid = [];
+      const gridContainer = document.getElementById('mystery-grid');
+      gridContainer.innerHTML = '';
+      
+      // Créer les récompenses
+      let cells = [];
+      for (let i = 0; i < 25; i++) {
+        cells.push(getRandomReward());
+      }
+      
+      // Mélanger
+      cells = shuffleArray(cells);
+      
+      // Créer la grille
+      for (let i = 0; i < 25; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell bg-gray-700 rounded-lg text-2xl hover:bg-pink-500/10';
+        cell.dataset.index = i;
+        cell.dataset.revealed = 'false';
+        cell.dataset.type = cells[i].type;
+        cell.dataset.value = cells[i].value;
+        cell.innerHTML = '<div class="pulse">❓</div>';
+        
+        cell.addEventListener('click', () => handleCellClick(i));
+        gridContainer.appendChild(cell);
+        grid.push(cells[i]);
+      }
+      
+      clicksLeft = Math.max(3, Math.floor(currentBet / 10)); // Plus de clics pour les grosses mises
+      document.getElementById('clicks-left').textContent = clicksLeft;
+      gameActive = true;
+      multiplierActive = false;
+      document.getElementById('play-button').innerHTML = '<i class="fas fa-sync-alt mr-2"></i> REJOUER';
+      showResult("Trouvez les meilleures récompenses!", "text-pink-400");
+    }
+
+    function handleCellClick(index) {
+      if (!gameActive || clicksLeft <= 0) return;
+      
+      const cell = document.getElementById('mystery-grid').children[index];
+      if (cell.dataset.revealed === 'true') return;
+      
+      cell.dataset.revealed = 'true';
+      cell.classList.add('revealed', 'bounce');
+      setTimeout(() => cell.classList.remove('bounce'), 500);
+      
+      const reward = grid[index];
+      cell.innerHTML = reward.emoji;
+      
+      clicksLeft--;
+      document.getElementById('clicks-left').textContent = clicksLeft;
+      
+      // Traiter la récompense
+      if (reward.type === 'bomb') {
+        gameActive = false;
+        showResult("💥 BOOM! Vous avez trouvé une bombe", "text-red-400");
+        cell.classList.add('bg-red-500/30');
+        setTimeout(() => revealAllCells(), 1000);
+      } else {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+        
+        if (typeof reward.value === 'number') {
+          let winAmount = reward.value;
+          if (multiplierActive) winAmount *= 2;
+          
+          userData.coins += winAmount;
+          localStorage.setItem(`user_${currentUser.id}_data`, JSON.stringify(userData));
+          document.getElementById('xcoins-amount').textContent = userData.coins;
+          
+          const winText = multiplierActive ? `${reward.text} x2 = ${winAmount} XC` : reward.text;
+          showResult(`🎉 Vous avez gagné ${winText}`, "text-green-400");
+          
+          cell.classList.add('bg-green-500/20');
+        } else if (reward.value === 'vip') {
+          showResult("👑 Clé VIP trouvée! (Fonctionnalité VIP)", "text-yellow-400");
+          cell.classList.add('bg-yellow-500/20');
+        } else if (reward.value === 'multiplier') {
+          multiplierActive = true;
+          showResult("✨ Multiplicateur x2 activé pour ce tour!", "text-purple-400");
+          cell.classList.add('bg-purple-500/20');
+        }
+      }
+      
+      if (clicksLeft <= 0) {
+        gameActive = false;
+        setTimeout(() => {
+          showResult("Partie terminée!", "text-pink-400");
+          revealAllCells();
+        }, 1000);
+      }
+    }
+
+    function revealAllCells() {
+      const cells = document.getElementById('mystery-grid').children;
+      for (let i = 0; i < cells.length; i++) {
+        if (cells[i].dataset.revealed === 'false') {
+          cells[i].dataset.revealed = 'true';
+          cells[i].classList.add('revealed');
+          cells[i].innerHTML = grid[i].emoji;
+        }
+      }
+    }
+
+    function resetGrid() {
+      createGrid();
+    }
+
+    function getRandomReward() {
+      const totalWeight = rewards.reduce((sum, r) => sum + r.weight, 0);
+      let random = Math.random() * totalWeight;
+      
+      for (const reward of rewards) {
+        if (random < reward.weight) return reward;
+        random -= reward.weight;
+      }
+      
+      return rewards[0];
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function showResult(message, colorClass) {
+      const resultEl = document.getElementById('grid-result');
+      resultEl.innerHTML = message;
+      resultEl.className = `mt-4 text-xl font-bold min-h-[50px] flex items-center justify-center rounded-lg bg-gray-700 p-3 border border-pink-500/30 ${colorClass} glow`;
+      setTimeout(() => resultEl.classList.remove('glow'), 1000);
+    }
+  </script>
+</body>
+</html>

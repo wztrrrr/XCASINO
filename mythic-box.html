@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Caisse Mythique - XCASINO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #8b5cf6;
+      --primary-dark: #7c3aed;
+      --dark-bg: #0f172a;
+      --darker-bg: #020617;
+      --highlight: rgba(139, 92, 246, 0.3);
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--darker-bg);
+      color: white;
+      min-height: 100vh;
+    }
+    
+    .mythic-container {
+      background: linear-gradient(145deg, #1e1b4b, #0f172a);
+      border: 3px solid var(--primary);
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .mythic-container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(0,0,0,0) 70%);
+      transform: rotate(30deg);
+      pointer-events: none;
+      animation: rotateBg 20s linear infinite;
+    }
+    
+    @keyframes rotateBg {
+      0% { transform: rotate(30deg); }
+      100% { transform: rotate(390deg); }
+    }
+    
+    .roulette-container {
+      perspective: 1000px;
+      margin: 2rem auto;
+    }
+    
+    .roulette {
+      width: 100%;
+      height: 200px;
+      border: 3px solid var(--primary);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      background: rgba(30, 30, 30, 0.7);
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7);
+    }
+    
+    .highlight {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      width: 160px;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(139, 92, 246, 0), rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0));
+      border-left: 3px solid gold;
+      border-right: 3px solid gold;
+      pointer-events: none;
+      z-index: 10;
+    }
+    
+    .items-container {
+      display: flex;
+      height: 100%;
+      transition: transform 6s cubic-bezier(0.1, 0.8, 0.2, 1);
+    }
+    
+    .item {
+      min-width: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      background: rgba(30, 30, 30, 0.8);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 1.2rem;
+      padding: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .item-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 10px currentColor;
+    }
+    
+    .mythic-animation {
+      animation: mythicPulse 1.5s infinite;
+    }
+    
+    @keyframes mythicPulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 rgba(139, 92, 246, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(139, 92, 246, 0.8); }
+      100% { transform: scale(1); box-shadow: 0 0 0 rgba(139, 92, 246, 0.4); }
+    }
+    
+    .jackpot-animation {
+      animation: jackpot 0.5s infinite alternate;
+    }
+    
+    @keyframes jackpot {
+      from { 
+        background-color: rgba(255, 215, 0, 0.1);
+        box-shadow: 0 0 10px gold;
+      }
+      to { 
+        background-color: rgba(255, 215, 0, 0.3);
+        box-shadow: 0 0 30px gold;
+      }
+    }
+    
+    .floating-orb {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.6), rgba(139, 92, 246, 0));
+      filter: blur(20px);
+      animation: floatOrb 15s ease-in-out infinite;
+      z-index: -1;
+    }
+    
+    @keyframes floatOrb {
+      0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+      25% { transform: translate(50px, -30px) scale(1.2); opacity: 0.9; }
+      50% { transform: translate(0, 20px) scale(0.8); opacity: 0.5; }
+      75% { transform: translate(-50px, -10px) scale(1.1); opacity: 0.8; }
+    }
+    
+    .confetti {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-color: var(--primary);
+      opacity: 0;
+      z-index: 20;
+    }
+    
+    .glowing-text {
+      text-shadow: 0 0 10px currentColor;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes glow {
+      from { text-shadow: 0 0 5px currentColor; }
+      to { text-shadow: 0 0 20px currentColor; }
+    }
+    
+    .reward-tier {
+      border-left: 4px solid;
+      transition: all 0.3s ease;
+    }
+    
+    .reward-tier:hover {
+      transform: translateX(5px);
+      background: rgba(255, 255, 255, 0.05);
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+  <div class="w-full max-w-4xl">
+    <h1 class="text-4xl font-bold text-center mb-2 glowing-text" style="color: #8b5cf6">
+      CAISSE MYTHIQUE
+    </h1>
+    <p class="text-center text-gray-400 mb-8">Tentez votre chance pour gagner des récompenses exceptionnelles</p>
+    
+    <!-- Éléments flottants décoratifs -->
+    <div class="floating-orb" style="top: 10%; left: 10%; animation-delay: 0s;"></div>
+    <div class="floating-orb" style="top: 70%; left: 80%; animation-delay: 2s; width: 150px; height: 150px;"></div>
+    
+    <div class="mythic-container p-8 relative overflow-hidden">
+      <!-- Roulette -->
+      <div class="roulette-container">
+        <div class="roulette mb-8">
+          <div class="highlight"></div>
+          <div id="items" class="items-container"></div>
+        </div>
+      </div>
+      
+      <!-- Bouton Spin -->
+      <button id="spin-btn" onclick="spinRoulette()" 
+              class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-4 px-8 rounded-lg text-xl font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg mb-8 my-4">
+        <i class="fas fa-gem mr-2"></i> OUVRIR LA CAISSE
+      </button>
+      
+      <!-- Résultat -->
+      <div id="result" class="text-2xl font-bold min-h-[100px] mb-8 text-center p-6 bg-gray-800/50 rounded-lg border border-purple-500/30 flex flex-col items-center justify-center">
+        <p class="text-gray-400">Votre récompense apparaîtra ici</p>
+      </div>
+    </div>
+    
+    <!-- Tableau des récompenses -->
+    <div class="bg-gray-800/50 rounded-xl p-6 mb-6 border border-gray-700 mt-8">
+      <h2 class="text-xl font-semibold mb-6 text-center glowing-text" style="color: #8b5cf6">
+        <i class="fas fa-trophy mr-2"></i> RÉCOMPENSES MYTHIQUES
+      </h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Colonne 1 -->
+        <div>
+          <div class="reward-tier p-4 mb-4" style="border-color: #10b981">
+            <h3 class="font-bold text-lg mb-2 flex items-center">
+              <span class="text-green-400 mr-2">★</span>
+              <span class="text-green-400">Récompenses Courantes</span>
+              <span class="ml-auto text-sm text-gray-400">60%</span>
+            </h3>
+            <ul class="space-y-3">
+              <li class="flex items-center">
+                <span class="text-2xl mr-3 text-blue-400">💰</span>
+                <span>50 XCoins</span>
+              </li>
+              <li class="flex items-center">
+                <span class="text-2xl mr-3 text-yellow-400">🔑</span>
+                <span>2 Clés Normales</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="reward-tier p-4 mb-4" style="border-color: #3b82f6">
+            <h3 class="font-bold text-lg mb-2 flex items-center">
+              <span class="text-blue-400 mr-2">★★</span>
+              <span class="text-blue-400">Récompenses Rares</span>
+              <span class="ml-auto text-sm text-gray-400">25%</span>
+            </h3>
+            <ul class="space-y-3">
+              <li class="flex items-center">
+                <span class="text-2xl mr-3 text-green-400">💶</span>
+                <span>0.20€ PayPal</span>
+              </li>
+              <li class="flex items-center">
+                <span class="text-2xl mr-3 text-blue-400">💰</span>
+                <span>150 XCoins</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Colonne 2 -->
+        <div>
+          <div class="reward-tier p-4 mb-4" style="border-color: #a855f7">
+            <h3 class="font-bold text-lg mb-2 flex items-center">
+              <span class="text-purple-400 mr-2">★★★</span>
+              <span class="text-purple-400">Récompenses Épiques</span>
+              <span class="ml-auto text-sm text-gray-400">10%</span>
+            </h3>
+            <ul class="space-y-3">
+              <li class="flex items-center">
+                <span class="text-2xl mr-3 text-purple-400">🎮</span>
+                <span>Nitro Basic</span>
+              </li>
+              <li class="flex items-center">
+                <span class="text-2xl mr-3 text-blue-400">💰</span>
+                <span>300 XCoins</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="reward-tier p-4" style="border-color: #f59e0b">
+            <h3 class="font-bold text-lg mb-2 flex items-center">
+              <span class="text-yellow-400 mr-2">★★★★</span>
+              <span class="text-yellow-400">Récompenses Légendaires</span>
+              <span class="ml-auto text-sm text-gray-400">5%</span>
+            </h3>
+            <ul class="space-y-3">
+              <li class="flex items-center">
+                <span class="text-2xl mr-3 text-purple-400">🎮</span>
+                <span class="font-bold">Nitro Boost</span>
+              </li>
+              <li class="flex items-center">
+                <span class="text-2xl mr-3 text-green-400">💶</span>
+                <span class="font-bold">1.00€ PayPal</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bouton Retour -->
+    <button onclick="window.location.href='index.html'" class="mt-6 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg border border-gray-700 transition-all flex items-center mx-auto">
+      <i class="fas fa-arrow-left mr-2"></i> Retour à l'accueil
+    </button>
+  </div>
+
+  <script>
+    // Configuration des récompenses
+    const rewardsConfig = {
+      common: [
+        { name: "💰 50 XCoins", icon: "fa-coins", weight: 35000, value: 50, color: "text-blue-400" },
+        { name: "🔑 2 Clés", icon: "fa-key", weight: 25000, value: 2, color: "text-yellow-400" }
+      ],
+      rare: [
+        { name: "💶 0.20€ PayPal", icon: "fa-euro-sign", weight: 15000, value: 20, color: "text-green-400" },
+        { name: "💰 150 XCoins", icon: "fa-coins", weight: 10000, value: 150, color: "text-blue-400" }
+      ],
+      epic: [
+        { name: "🎮 Nitro Basic", icon: "fa-gamepad", weight: 8000, value: 500, color: "text-purple-400" },
+        { name: "💰 300 XCoins", icon: "fa-coins", weight: 2000, value: 300, color: "text-blue-400" }
+      ],
+      legendary: [
+        { name: "🎮 Nitro Boost", icon: "fa-gamepad", weight: 1000, value: 1000, color: "text-purple-400" },
+        { name: "💶 1.00€ PayPal", icon: "fa-euro-sign", weight: 500, value: 100, color: "text-green-400" }
+      ]
+    };
+
+    let isSpinning = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      generateStaticItems();
+      
+      // Vérifier si l'utilisateur a acheté une caisse mythique
+      if (localStorage.getItem('boughtMythicBox')) {
+        setTimeout(() => {
+          spinRoulette();
+        }, 1500);
+      }
+    });
+
+    function generateStaticItems() {
+      const container = document.getElementById('items');
+      container.innerHTML = '';
+      
+      // Combiner toutes les récompenses
+      const allRewards = [...rewardsConfig.common, ...rewardsConfig.rare, ...rewardsConfig.epic, ...rewardsConfig.legendary];
+      
+      // Afficher un échantillon de récompenses
+      allRewards.forEach(reward => {
+        const item = document.createElement('div');
+        item.className = `item ${reward.color}`;
+        item.innerHTML = `
+          <div class="item-icon"><i class="fas ${reward.icon}"></i></div>
+          <div>${reward.name}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function spinRoulette() {
+      if (isSpinning) return;
+      
+      // Vérifier si la caisse a été achetée
+      if (!localStorage.getItem('boughtMythicBox')) {
+        showResult("Vous devez d'abord acheter cette caisse dans la boutique !", "text-red-400");
+        setTimeout(() => {
+          window.location.href = 'boutique.html';
+        }, 2000);
+        return;
+      }
+
+      isSpinning = true;
+      document.getElementById('spin-btn').disabled = true;
+      document.getElementById('result').innerHTML = '<p class="text-purple-400">Ouverture de la caisse mythique...</p>';
+
+      const spinItems = [];
+      for (let i = 0; i < 80; i++) {
+        spinItems.push(getRandomReward());
+      }
+
+      const container = document.getElementById('items');
+      container.innerHTML = '';
+      spinItems.forEach(reward => {
+        const item = document.createElement('div');
+        item.className = `item ${reward.color}`;
+        item.innerHTML = `
+          <div class="item-icon"><i class="fas ${reward.icon}"></i></div>
+          <div>${reward.name}</div>
+        `;
+        container.appendChild(item);
+      });
+
+      const itemWidth = 160;
+      const index = 40 + Math.floor(Math.random() * 10);
+      const offset = index * itemWidth;
+
+      container.style.transition = 'none';
+      container.style.transform = `translateX(-${offset - 240}px)`;
+      
+      // Force reflow
+      void container.offsetWidth;
+      
+      container.style.transition = 'transform 6s cubic-bezier(0.1, 0.8, 0.2, 1)';
+      container.style.transform = `translateX(-${offset}px)`;
+
+      setTimeout(() => {
+        const reward = spinItems[index];
+        showResult(reward);
+        
+        // Traiter la récompense
+        if (!reward.name.includes("Rien")) {
+          // Ajouter à l'inventaire
+          addToInventory(reward.name);
+          
+          // Animation spéciale pour les récompenses légendaires
+          if (isLegendary(reward)) {
+            createConfetti();
+            document.getElementById('result').classList.add('jackpot-animation');
+          }
+        }
+        
+        // Reset mythic box purchase flag
+        localStorage.removeItem('boughtMythicBox');
+        
+        isSpinning = false;
+        
+        setTimeout(() => {
+          document.getElementById('result').classList.remove('jackpot-animation');
+        }, 3000);
+      }, 6000);
+    }
+
+    function getRandomReward() {
+      // Déterminer la rareté
+      const rarityRoll = Math.random() * 100;
+      let rewardPool;
+      
+      if (rarityRoll < 60) rewardPool = rewardsConfig.common;       // 60%
+      else if (rarityRoll < 85) rewardPool = rewardsConfig.rare;   // 25%
+      else if (rarityRoll < 95) rewardPool = rewardsConfig.epic;   // 10%
+      else rewardPool = rewardsConfig.legendary;                   // 5%
+      
+      // Choisir une récompense dans le pool
+      const totalWeight = rewardPool.reduce((sum, r) => sum + r.weight, 0);
+      const rand = Math.floor(Math.random() * totalWeight);
+      let cumulative = 0;
+      
+      for (const reward of rewardPool) {
+        cumulative += reward.weight;
+        if (rand < cumulative) return reward;
+      }
+      
+      return { name: "Rien", icon: "fa-times", weight: 0, value: 0, color: "text-gray-400" };
+    }
+
+    function isLegendary(reward) {
+      return rewardsConfig.legendary.some(r => r.name === reward.name);
+    }
+
+    function showResult(reward) {
+      const resultElement = document.getElementById('result');
+      
+      if (reward.name === "Rien") {
+        resultElement.innerHTML = `
+          <p class="text-gray-400">Dommage...</p>
+          <p class="text-xl">Vous n'avez rien gagné cette fois</p>
+        `;
+      } else {
+        const isLegendaryReward = isLegendary(reward);
+        const resultClass = isLegendaryReward ? "jackpot-animation" : "mythic-animation";
+        
+        resultElement.innerHTML = `
+          <p class="text-green-400">FÉLICITATIONS !</p>
+          <p class="text-3xl ${reward.color} ${resultClass} p-4 rounded-lg">${reward.name}</p>
+          ${reward.value > 0 ? `<p class="text-sm text-gray-400 mt-2">Valeur: ${reward.value} pts</p>` : ''}
+        `;
+        
+        setTimeout(() => {
+          resultElement.classList.remove('mythic-animation');
+        }, 3000);
+      }
+    }
+
+    function addToInventory(rewardName) {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (!currentUser) return;
+
+      const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+      userData.inventory = userData.inventory || [];
+      userData.inventory.push(rewardName);
+      
+      // Créditer les XCoins si c'est une récompense monétaire
+      if (rewardName.includes("XCoins")) {
+        const amount = parseInt(rewardName.match(/\d+/)[0]);
+        userData.coins = (userData.coins || 0) + amount;
+      }
+      
+      localStorage.setItem(`user_${currentUser.id}_data`, JSON.stringify(userData));
+    }
+
+    function createConfetti() {
+      const container = document.querySelector('.mythic-container');
+      const colors = ['#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f472b6'];
+      
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = `${Math.random() * 100}%`;
+        confetti.style.top = '-10px';
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        confetti.style.width = `${Math.random() * 12 + 6}px`;
+        confetti.style.height = `${Math.random() * 12 + 6}px`;
+        
+        container.appendChild(confetti);
+        
+        // Animation
+        setTimeout(() => {
+          confetti.style.opacity = '1';
+          confetti.style.top = `${Math.random() * 100 + 100}%`;
+          confetti.style.left = `${Math.random() * 100}%`;
+          confetti.style.transition = `all ${Math.random() * 3 + 2}s linear`;
+          
+          setTimeout(() => {
+            confetti.remove();
+          }, 5000);
+        }, i * 30);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Caisse VIP - XCASINO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #ec4899;
+      --primary-dark: #db2777;
+      --dark-bg: #1a1a1a;
+      --darker-bg: #111111;
+      --highlight: rgba(236, 72, 153, 0.3);
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--darker-bg);
+      color: white;
+      min-height: 100vh;
+    }
+    
+    .premium-box {
+      background: linear-gradient(145deg, #252525, #1e1e1e);
+      border: 2px solid var(--primary);
+      box-shadow: 0 0 30px rgba(236, 72, 153, 0.2);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .premium-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(236,72,153,0.1) 0%, rgba(0,0,0,0) 70%);
+      transform: rotate(30deg);
+      pointer-events: none;
+    }
+    
+    .roulette-container {
+      perspective: 1000px;
+      margin: 2rem auto;
+    }
+    
+    .roulette {
+      width: 100%;
+      height: 180px;
+      border: 3px solid var(--primary);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      background: rgba(30, 30, 30, 0.7);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    .highlight {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 100%;
+      background: var(--highlight);
+      border-left: 3px solid var(--primary);
+      border-right: 3px solid var(--primary);
+      pointer-events: none;
+      z-index: 10;
+    }
+    
+    .items-container {
+      display: flex;
+      height: 100%;
+      transition: transform 8s cubic-bezier(0.2, 0.8, 0.3, 1);
+    }
+    
+    .item {
+      min-width: 150px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      background: rgba(30, 30, 30, 0.8);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 1.1rem;
+      padding: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .item-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .premium-animation {
+      animation: premiumPulse 1.5s infinite;
+    }
+    
+    @keyframes premiumPulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 rgba(236, 72, 153, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(236, 72, 153, 0.6); }
+      100% { transform: scale(1); box-shadow: 0 0 0 rgba(236, 72, 153, 0.4); }
+    }
+    
+    .key-counter {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--primary);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+    
+    .key-counter i {
+      margin-right: 0.5rem;
+      color: var(--primary);
+    }
+    
+    .floating-coin {
+      position: absolute;
+      animation: float 6s ease-in-out infinite;
+      opacity: 0.7;
+      z-index: -1;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(10deg); }
+    }
+    
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: var(--primary);
+      opacity: 0;
+    }
+    
+    .jackpot-item {
+      background: linear-gradient(45deg, rgba(255,215,0,0.1), rgba(255,215,0,0.3));
+      border: 1px solid gold;
+    }
+    
+    .vip-badge {
+      background: linear-gradient(135deg, #f59e0b, #ec4899);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+  <div class="w-full max-w-4xl">
+    <div class="flex items-center justify-center mb-2">
+      <h1 class="text-4xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-pink-300 mr-3">
+        Caisse VIP
+      </h1>
+      <span class="vip-badge">Exclusif</span>
+    </div>
+    <p class="text-center text-gray-400 mb-8">Tentez votre chance pour gagner des récompenses VIP exceptionnelles</p>
+    
+    <div class="premium-box p-6 relative overflow-hidden">
+      <!-- Compteur de clés VIP -->
+      <div class="key-counter">
+        <i class="fas fa-key"></i>
+        <span id="vip-keys-count">0</span>
+      </div>
+      
+      <!-- Éléments flottants décoratifs -->
+      <div class="floating-coin text-yellow-400 text-4xl" style="top: 20%; left: 10%; animation-delay: 0s;">
+        <i class="fas fa-coins"></i>
+      </div>
+      <div class="floating-coin text-pink-400 text-3xl" style="top: 70%; left: 85%; animation-delay: 1s;">
+        <i class="fas fa-gem"></i>
+      </div>
+      <div class="floating-coin text-purple-400 text-2xl" style="top: 30%; left: 80%; animation-delay: 2s;">
+        <i class="fas fa-star"></i>
+      </div>
+      
+      <!-- Roulette -->
+      <div class="roulette-container">
+        <div class="roulette mb-6">
+          <div class="highlight"></div>
+          <div id="items" class="items-container"></div>
+        </div>
+      </div>
+      
+      <!-- Bouton Spin -->
+      <button id="spin-btn" class="w-full bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white py-4 px-8 rounded-lg text-xl font-bold mb-6 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 active:scale-95">
+        <i class="fas fa-gift mr-2"></i> Ouvrir la Caisse VIP (1 clé VIP)
+      </button>
+      
+      <!-- Résultat -->
+      <div id="result" class="text-2xl font-bold min-h-[80px] mb-6 text-center p-4 bg-gray-800/50 rounded-lg border border-pink-500/30">
+        <p class="text-gray-400">Vos gains apparaîtront ici</p>
+      </div>
+      
+      <!-- Statistiques -->
+      <div class="grid grid-cols-3 gap-4 text-center">
+        <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+          <p class="text-gray-400 text-sm">Ouvertures</p>
+          <p id="open-count" class="text-xl font-bold text-pink-400">0</p>
+        </div>
+        <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+          <p class="text-gray-400 text-sm">Gains</p>
+          <p id="win-count" class="text-xl font-bold text-green-400">0</p>
+        </div>
+        <div class="bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+          <p class="text-gray-400 text-sm">Valeur totale</p>
+          <p id="total-value" class="text-xl font-bold text-yellow-400">0</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tableau des lots -->
+    <div class="bg-gray-800/50 rounded-xl p-6 mb-6 border border-gray-700 mt-6">
+      <h2 class="text-xl font-semibold mb-4 text-center text-pink-400">🎁 Lots VIP Disponibles</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h3 class="font-bold mb-2 text-yellow-400">Récompenses Courantes</h3>
+          <div class="space-y-2">
+            <div class="flex items-center p-2 bg-gray-700/50 rounded">
+              <span class="text-2xl mr-3 text-blue-400">💰</span>
+              <span>1000 XCoins</span>
+            </div>
+            <div class="flex items-center p-2 bg-gray-700/50 rounded">
+              <span class="text-2xl mr-3 text-yellow-400">🔑</span>
+              <span>10 Clés VIP</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-bold mb-2 text-yellow-400">Récompenses Rares</h3>
+          <div class="space-y-2">
+            <div class="flex items-center p-2 bg-gray-700/50 rounded">
+              <span class="text-2xl mr-3 text-blue-400">💰</span>
+              <span>5000 XCoins</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-bold mb-2 text-yellow-400">Récompenses Légendaires</h3>
+          <div class="space-y-2">
+            <div class="flex items-center p-2 bg-gray-700/50 rounded jackpot-item">
+              <span class="text-2xl mr-3 text-green-400">💶</span>
+              <span class="font-bold">PayPal 1.00€</span>
+            </div>
+            <div class="flex items-center p-2 bg-gray-700/50 rounded jackpot-item">
+              <span class="text-2xl mr-3 text-purple-400">🎮</span>
+              <span class="font-bold">Nitro Boost</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Achat de clés VIP -->
+    <div class="bg-gray-800/50 rounded-xl p-6 mb-6 border border-gray-700">
+      <h2 class="text-xl font-semibold mb-4 text-center text-pink-400">🔑 Acheter des clés VIP</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button onclick="buyVipKey(1, 1000)" class="bg-pink-600 hover:bg-pink-700 text-white py-3 px-4 rounded-lg transition-all">
+          Acheter 1 clé VIP - 1000 XCoins
+        </button>
+        <button onclick="buyVipKey(5, 4500)" class="bg-pink-600 hover:bg-pink-700 text-white py-3 px-4 rounded-lg transition-all">
+          Pack de 5 clés VIP - 4500 XCoins (-10%)
+        </button>
+      </div>
+    </div>
+    
+    <!-- Bouton Retour -->
+    <button onclick="window.location.href='index.html'" class="mt-8 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg border border-gray-700 transition-all">
+      <i class="fas fa-arrow-left mr-2"></i> Retour à l'accueil
+    </button>
+  </div>
+
+  <script>
+    // Configuration des récompenses VIP
+    const vipRewards = [
+      { name: "💰 XCoins x1000", icon: "fa-coins", weight: 1000, value: 1000, color: "text-blue-400" },
+      { name: "💰 XCoins x5000", icon: "fa-coins", weight: 500, value: 5000, color: "text-blue-400" },
+      { name: "💶 PayPal 1.00€", icon: "fa-euro-sign", weight: 8, value: 100, color: "text-green-400" },
+      { name: "🎮 Nitro Boost", icon: "fa-gamepad", weight: 8, value: 1000, color: "text-purple-400" },
+      { name: "🔑 10 Clés VIP", icon: "fa-key", weight: 1000, value: 10000, color: "text-yellow-400" }
+    ];
+
+    // État du jeu
+    let isSpinning = false;
+    let spinCount = 0;
+    let winCount = 0;
+    let totalValue = 0;
+    let lastRewards = [];
+
+    // Initialisation
+    function init() {
+      loadData();
+      generateStaticItems();
+      updateUI();
+      
+      document.getElementById('spin-btn').addEventListener('click', spinRoulette);
+    }
+
+    // Charger les données
+    function loadData() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+      spinCount = userData.vipSpinCount || 0;
+      winCount = userData.vipWinCount || 0;
+      totalValue = userData.vipTotalValue || 0;
+      lastRewards = userData.vipLastRewards || [];
+      
+      updateVipKeysCount();
+    }
+
+    // Mettre à jour le compteur de clés VIP
+    function updateVipKeysCount() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (currentUser) {
+        const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+        document.getElementById('vip-keys-count').textContent = userData.vipKeys || 0;
+      }
+    }
+
+    // Sauvegarder les données
+    function saveData() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (currentUser) {
+        const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+        userData.vipSpinCount = spinCount;
+        userData.vipWinCount = winCount;
+        userData.vipTotalValue = totalValue;
+        userData.vipLastRewards = lastRewards.slice(0, 10);
+        localStorage.setItem(`user_${currentUser.id}_data`, JSON.stringify(userData));
+      }
+    }
+
+    // Générer les items visibles
+    function generateStaticItems() {
+      const container = document.getElementById('items');
+      container.innerHTML = '';
+      
+      // Afficher un échantillon de récompenses
+      vipRewards.forEach(reward => {
+        const item = document.createElement('div');
+        item.className = `item ${reward.color}`;
+        item.innerHTML = `
+          <div class="item-icon"><i class="fas ${reward.icon}"></i></div>
+          <div>${reward.name}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // Tourner la roulette
+    function spinRoulette() {
+      if (isSpinning) return;
+      
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+      
+      if (!userData.vipKeys || userData.vipKeys <= 0) {
+        showMessage("Vous n'avez pas de clés VIP !", "text-red-400");
+        return;
+      }
+
+      isSpinning = true;
+      userData.vipKeys--;
+      localStorage.setItem(`user_${currentUser.id}_data`, JSON.stringify(userData));
+      updateVipKeysCount();
+      
+      spinCount++;
+      document.getElementById('spin-btn').disabled = true;
+      document.getElementById('result').innerHTML = '<p class="text-gray-400">La roulette tourne...</p>';
+
+      // Générer les items pour l'animation
+      const spinItems = [];
+      for (let i = 0; i < 100; i++) {
+        spinItems.push(getRandomVipReward());
+      }
+
+      const container = document.getElementById('items');
+      container.innerHTML = '';
+      spinItems.forEach(reward => {
+        const item = document.createElement('div');
+        item.className = `item ${reward.color}`;
+        item.innerHTML = `
+          <div class="item-icon"><i class="fas ${reward.icon}"></i></div>
+          <div>${reward.name}</div>
+        `;
+        container.appendChild(item);
+      });
+
+      // Animation
+      const itemWidth = 150;
+      const index = 50 + Math.floor(Math.random() * 10);
+      const offset = index * itemWidth;
+
+      container.style.transition = 'none';
+      container.style.transform = `translateX(-${offset - 180}px`;
+      void container.offsetWidth; // Force reflow
+      container.style.transition = 'transform 8s cubic-bezier(0.2, 0.8, 0.3, 1)';
+      container.style.transform = `translateX(-${offset}px`;
+
+      setTimeout(() => {
+        const reward = spinItems[index];
+        showResult(reward);
+        
+        // Traiter la récompense
+        if (!reward.name.includes("Rien")) {
+          winCount++;
+          totalValue += reward.value;
+          lastRewards.unshift({
+            name: reward.name,
+            date: new Date().toISOString(),
+            value: reward.value
+          });
+          
+          // Ajouter à l'inventaire
+          addToInventory(reward.name);
+          
+          // Animation de confettis pour les gains importants
+          if (reward.value >= 500 || reward.name.includes("Nitro") || reward.name.includes("PayPal")) {
+            createConfetti();
+          }
+        }
+        
+        updateUI();
+        isSpinning = false;
+        document.getElementById('spin-btn').disabled = false;
+      }, 8000);
+    }
+
+    // Obtenir une récompense VIP aléatoire
+    function getRandomVipReward() {
+      const totalWeight = vipRewards.reduce((sum, r) => sum + r.weight, 0);
+      const rand = Math.floor(Math.random() * totalWeight);
+      let cumulative = 0;
+      
+      for (const reward of vipRewards) {
+        cumulative += reward.weight;
+        if (rand < cumulative) return reward;
+      }
+      
+      return { name: "Rien", icon: "fa-times", weight: 0, value: 0, color: "text-gray-400" };
+    }
+
+    // Afficher le résultat
+    function showResult(reward) {
+      const resultElement = document.getElementById('result');
+      
+      if (reward.name === "Rien") {
+        resultElement.innerHTML = `
+          <p class="text-gray-400">Dommage...</p>
+          <p class="text-xl">Vous n'avez rien gagné cette fois</p>
+        `;
+      } else {
+        let jackpotClass = "";
+        if (reward.value >= 500 || reward.name.includes("Nitro") || reward.name.includes("PayPal")) {
+          jackpotClass = "jackpot-item";
+          resultElement.classList.add("premium-animation");
+        }
+        
+        resultElement.innerHTML = `
+          <p class="text-green-400">Félicitations !</p>
+          <p class="text-2xl ${reward.color} ${jackpotClass} p-2 rounded-lg">${reward.name}</p>
+          ${reward.value > 0 ? `<p class="text-sm text-gray-400 mt-2">Valeur: ${reward.value} pts</p>` : ''}
+        `;
+        
+        setTimeout(() => {
+          resultElement.classList.remove("premium-animation");
+        }, 3000);
+      }
+    }
+
+    // Ajouter à l'inventaire
+    function addToInventory(rewardName) {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (!currentUser) return;
+
+      const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+      userData.inventory = userData.inventory || [];
+      userData.inventory.push(rewardName);
+      
+      // Créditer les XCoins si c'est une récompense monétaire
+      if (rewardName.includes("XCoins")) {
+        const amount = parseInt(rewardName.match(/\d+/)[0]);
+        userData.coins = (userData.coins || 0) + amount;
+      }
+      
+      // Créditer les clés VIP si c'est une récompense de clés
+      if (rewardName.includes("Clés VIP")) {
+        const amount = parseInt(rewardName.match(/\d+/)[0]);
+        userData.vipKeys = (userData.vipKeys || 0) + amount;
+        updateVipKeysCount();
+      }
+      
+      localStorage.setItem(`user_${currentUser.id}_data`, JSON.stringify(userData));
+    }
+
+    // Mettre à jour l'interface
+    function updateUI() {
+      document.getElementById('open-count').textContent = spinCount;
+      document.getElementById('win-count').textContent = winCount;
+      document.getElementById('total-value').textContent = totalValue;
+      saveData();
+    }
+
+    // Afficher un message
+    function showMessage(text, colorClass) {
+      const resultElement = document.getElementById('result');
+      resultElement.innerHTML = `<p class="${colorClass}">${text}</p>`;
+    }
+
+    // Créer des confettis
+    function createConfetti() {
+      const container = document.querySelector('.premium-box');
+      const colors = ['#ec4899', '#f472b6', '#f59e0b', '#10b981', '#3b82f6'];
+      
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.left = `${Math.random() * 100}%`;
+        confetti.style.top = '-10px';
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        confetti.style.width = `${Math.random() * 10 + 5}px`;
+        confetti.style.height = `${Math.random() * 10 + 5}px`;
+        
+        container.appendChild(confetti);
+        
+        // Animation
+        setTimeout(() => {
+          confetti.style.opacity = '1';
+          confetti.style.top = `${Math.random() * 100 + 100}%`;
+          confetti.style.left = `${Math.random() * 100}%`;
+          confetti.style.transition = `all ${Math.random() * 3 + 2}s linear`;
+          
+          setTimeout(() => {
+            confetti.remove();
+          }, 5000);
+        }, i * 50);
+      }
+    }
+
+    // Acheter des clés VIP
+    function buyVipKey(quantity, price) {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (!currentUser) {
+        alert("Veuillez vous connecter");
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const userData = JSON.parse(localStorage.getItem(`user_${currentUser.id}_data`)) || {};
+      if (userData.coins < price) {
+        alert("Vous n'avez pas assez de XCoins");
+        return;
+      }
+
+      userData.coins -= price;
+      userData.vipKeys = (userData.vipKeys || 0) + quantity;
+      localStorage.setItem(`user_${currentUser.id}_data`, JSON.stringify(userData));
+      alert(`${quantity} clé(s) VIP achetée(s) avec succès !`);
+      updateVipKeysCount();
+    }
+
+    // Démarrer le jeu
+    init();
+  </script>
+</body>
+</html>
